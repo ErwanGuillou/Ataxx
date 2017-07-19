@@ -8,11 +8,11 @@
         null, null, 5, 0, 0, 0, 0, 0, 0, 0, null, null,
         null, null, 0, 0, 0, 0, 0, 0, 0, 0, null, null,
         null, null, 0, 0, 0, 0, 0, 0, 0, 0, null, null,
-        null, null, 0, 0, 0, 5, 5, 0, 1, 1, null, null,
+        null, null, 0, 0, 0, 5, 5, 1, 1, 0, null, null,
         null, null, 0, 0, 0, 5, 5, 0, 0, 0, null, null,
         null, null, 0, 0, 0, 0, 0, 0, 0, 0, null, null,
         null, null, 0, 0, 0, 0, 0, 0, 0, -1, null, null,
-        null, null, 0, 0, 0, 0, 0, 0, -1, 5, null, null,
+        null, null, 0, 0, 0, 0, 0, 0, 0, 5, null, null,
         null, null, null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null, null
 
@@ -35,6 +35,9 @@
     var ClonePlaceholder    =   '<div class="cplaceholder"></div>';
     var JumpPlaceholder     =   '<div class="jplaceholder"></div>';
     var PlaceHolder         =   '<div class="placeholder"></div>';
+
+    // Misc
+    var HumanLastMove   =   null;
 
     // Functions
 
@@ -2044,12 +2047,17 @@
     function buildBoard(){
         var $board = $('#board');
 
+        // Récupérer une position Humaine, au hasard
+        if(HumanLastMove === null){
+            var HumanPositions = [];
+        }
+
         for(var Id = 0; Id <= 136; Id++){
             switch(board[Id]){
                 case Ai:
 
                     var $child = AiObj.clone(true);
-                    var $parent = EmptyObj.clone(true).data({ Id:Id, Child:$child });
+                    var $parent = EmptyObj.clone(true).data({ Id:Id, Child:$child }).attr('title', Id);
                     $child.data({ Parent:$parent });
 
                     $parent.html($child);
@@ -2060,32 +2068,38 @@
                 case Human:
 
                     var $child = HumanObj.clone(true);
-                    var $parent = EmptyObj.clone(true).data({ Id:Id, Child:$child });
+                    var $parent = EmptyObj.clone(true).data({ Id:Id, Child:$child }).attr('title', Id);
                     $child.data({ Parent:$parent });
 
                     $parent.html($child);
                     $board.append($parent);
 
+                    if(HumanLastMove === null){
+                        HumanPositions.push(Id);
+                    }
+
                     break;
 
                 case Empty:
 
-                    var $elt = EmptyObj.clone(true).data({ Id:Id });
+                    var $elt = EmptyObj.clone(true).data({ Id:Id }).attr('title', Id);
                     $board.append($elt);
 
                     break;
 
                 case Hole:
 
-                    var $elt = HoleObj.clone(true).data( { Id:Id } );
+                    var $elt = HoleObj.clone(true).data( { Id:Id } ).attr('title', Id);
                     $board.append($elt);
 
                     break;
             }
         }
 
-
-
+        // Attribuer une position à Humain si null
+        if(HumanLastMove === null){
+            HumanLastMove = HumanPositions[Math.floor(Math.random() * HumanPositions.length)];
+        }
     }
 
     function getScores(board){
@@ -2670,6 +2684,7 @@
         return [nAi, nHuman, nHole];
     }
 
+    // Peut encore être améliorée en réduisant les accès au tableau
     function setScores(){
 
         var scores = getScores(board);
@@ -2703,6 +2718,7 @@
 
                             // Save move
                             var oldBoard = getCopyBoard(board);
+                            HumanLastMove = betaId;
                             board = setMove(board, Human, [alphaId, betaId, isJump]);
 
                             // Get visual feedback
@@ -2859,7 +2875,7 @@
         }
     }
 
-    function negaMax(board, depth, player, alpha, beta){
+    function negaMax(board, depth, player, alpha, beta, opponentLastMoveId, lastMoveId){
 
         // Mouvements possibles pour player
         var possibleMoves = getPossibleMoves(board, player);
@@ -2869,21 +2885,62 @@
             bestMoves = [];
         }
 
-        // Si feuilles finales
-        if(depth > 2 || possibleMoves.length === 0) {
+        // Si feuilles finales, fonction d'évaluation
+        if(depth === 3 || possibleMoves.length === 0) {
+
+
+            // Renvoyer une valeur positive pour l'IA si c'est bon
+            // Renvoyer une valeur négative pour l'Humain
+            var evaluation = 0;
 
             var scores = getScores(board);
-            return player * (scores[0] - scores[1]);
 
+            // Si Human a perdu, on retourne une valeur positive à IA (donc négative à Human)
+            if(scores[1] === 0){
+                return player * 1000;
+            }
+
+            // Si IA a perdu, la valeur renvoyée doit être super négative
+            if(scores[0] === 0){
+                return player * -1000;
+            }
+
+            // Si score IA > score Human, on renvoie une valeur positive
+            if(scores[0] > scores[1]){
+                evaluation += (player * ((scores[0] - scores[1]) + 50));
+            }
+
+            // Sinon si score Human > score IA, danger ! On renvoie une valeur négative
+            else if(scores[1] > scores[0]){
+                evaluation += (player * ((scores[0] - scores[1]) + 50));
+            }
+
+            // Si égalité, on considère que ce n'est pas tiptop (à voir)
+            else {
+                evaluation += 1;
+            }
+
+            return evaluation;
         }
 
         // Sinon
         var max = -150;
-        possibleMoves.forEach(function(move){
+
+        for(var i = possibleMoves.length - 1; i > 0; i--){
+
+            var move = possibleMoves[i];
+
+            //
+            if(depth === 0){
+                opponentLastMoveId = HumanLastMove;
+            }
+            else {
+                opponentLastMoveId = lastMoveId;
+            }
 
             var copiedBoard = getCopyBoard(board);
             copiedBoard = setMove(copiedBoard, player, move);
-            var x = -(negaMax(copiedBoard, depth+1, player * -1, -alpha, -beta));
+            var x = -(negaMax(copiedBoard, depth+1, player * -1, -beta, -alpha, opponentLastMoveId, move[1]));
 
             if(x > max) {
                 max = x;
@@ -2898,22 +2955,30 @@
                 }
             }
 
-
             if(x > alpha) alpha = x;
-            if(alpha >= beta) return alpha;
-        });
+            if(alpha >= beta) {
+                return move;
+            }
+        }
 
         if(depth === 0){
             return bestMoves[Math.floor(Math.random() * bestMoves.length)];
         }
-        else return max;
+
+        return max;
     }
 
     function play(player){
 
         // Au tour de l'IA
         if(player == Ai){
+
+            console.time('E');
             var aiMove = negaMax(board, 0, Ai, -150, 150);
+            console.timeEnd('E');
+
+            console.log("Move made : ", aiMove);
+
             if(typeof aiMove === 'object'){
 
                 // Save move
@@ -2981,3 +3046,7 @@
     // Start playing !
 
     start(Human);
+
+
+
+
