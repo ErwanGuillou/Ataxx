@@ -1,0 +1,74 @@
+var func = "var possibleMoves = []; var i = 0;";
+
+board.forEach(function(val,key) {
+    if (val > -1) {
+
+
+        func += "if(board["+key+"] === player){";
+
+        // N
+        if (board[key - 24] > -1) {
+            func += "if(board[" + (key - 24) + "] === 0){possibleMoves[i++] = ["+key+", "+(key - 24)+", 1];}";
+        }
+
+        // O
+        if (board[key - 2] > -1) {
+            func += "if(board[" + (key - 2) + "] === 0){possibleMoves[i++] = ["+key+", "+(key - 2)+", 1];}";
+        }
+
+        // E
+        if (board[key + 2] > -1) {
+            func += "if(board[" + (key + 2) + "] === 0){possibleMoves[i++] = ["+key+", "+(key + 2)+", 1];}";
+        }
+
+        // S
+        if (board[key + 24] > -1) {
+            func += "if(board[" + (key + 24) + "] === 0){possibleMoves[i++] = ["+key+", "+(key + 24)+", 1];}";
+        }
+
+        // no
+        if (board[key - 13] > -1) {
+            func += "if(board[" + (key - 13) + "] === 0){possibleMoves[i++] = ["+key+", "+(key - 13)+", 0];}";
+        }
+
+        // n
+        if (board[key - 12] > -1) {
+            func += "if(board[" + (key - 12) + "] === 0){possibleMoves[i++] = ["+key+", "+(key - 12)+", 0];}";
+        }
+
+        // ne
+        if (board[key - 11] > -1) {
+            func += "if(board[" + (key - 11) + "] === 0){possibleMoves[i++] = ["+key+", "+(key - 11)+", 0];}";
+        }
+
+        // o
+        if (board[key - 1] > -1) {
+            func += "if(board[" + (key - 1) + "] === 0){possibleMoves[i++] = ["+key+", "+(key - 1)+", 0];}";
+        }
+
+        // e
+        if (board[key + 1] > -1) {
+            func += "if(board[" + (key + 1) + "] === 0){possibleMoves[i++] = ["+key+", "+(key + 1)+", 0];}";
+        }
+
+        // so
+        if (board[key + 11] > -1) {
+            func += "if(board[" + (key + 11) + "] === 0){possibleMoves[i++] = ["+key+", "+(key + 11)+", 0];}";
+        }
+
+        // s
+        if (board[key + 12] > -1) {
+            func += "if(board[" + (key + 12) + "] === 0){possibleMoves[i++] = ["+key+", "+(key + 12)+", 0];}";
+        }
+
+        // se
+        if (board[key + 13] > -1) {
+            func += "if(board[" + (key + 13) + "] === 0){possibleMoves[i++] = ["+key+", "+(key + 13)+", 0];}";
+        }
+
+        func += "}";
+
+    }
+});
+
+    console.log(func);

@@ -1,0 +1,123 @@
+html,body {
+    width:100%;
+    height:100%;
+}
+
+body {
+    display:flex;
+    align-items: center;
+    justify-content: space-around;
+    margin:0;
+    font-family: Verdana, "sans-serif";
+}
+
+#board {
+    position:relative;
+    display:flex;
+    flex-wrap: wrap;
+    width:280px;
+    height:280px;
+
+    border-right: 0.5px solid #333;
+    border-bottom: 0.5px solid #333;
+
+    background: rgb(246,230,180); /* Old browsers */
+    background: -moz-radial-gradient(center, ellipse cover, rgba(246,230,180,1) 0%, rgba(237,144,23,1) 100%); /* FF3.6-15 */
+    background: -webkit-radial-gradient(center, ellipse cover, rgba(246,230,180,1) 0%,rgba(237,144,23,1) 100%); /* Chrome10-25,Safari5.1-6 */
+    background: radial-gradient(ellipse at center, rgba(246,230,180,1) 0%,rgba(237,144,23,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f6e6b4', endColorstr='#ed9017',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+
+#board > div {
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    width:35px;
+    height:35px;
+    border-left: 0.5px solid #333;
+    border-top: 0.5px solid #333;
+    box-sizing: border-box;
+}
+
+#board > div.hole {
+    background-color: #000;
+    border-style: inset;
+}
+
+#board > div > div.pion {
+    width: 20px;
+    height: 20px;
+    border-radius: 15px;
+    box-shadow: rgba(0,0,0,.5) 2px 2px 2px;
+}
+
+#board > div > div.pion.ai {
+    background-color: olive;
+}
+
+#board > div > div.pion.human {
+    background-color: #c60800;
+    cursor: not-allowed;
+}
+
+#board > div > div.pion.human.clickable {
+    cursor: pointer;
+}
+
+#board > div > div.placeholder {
+    width:20px;
+    height:20px;
+    border-radius:20px;
+    background-color:rgba(0,0,0,.05);
+}
+
+#board > div > div.jplaceholder {
+    width:10px;
+    height:10px;
+    border-radius:10px;
+    border:2px solid #333;
+    box-sizing: border-box;
+    cursor:pointer;
+}
+
+#board > div > div.cplaceholder {
+    width:15px;
+    height:15px;
+    border-radius:15px;
+    background-color:#333;
+    cursor:pointer;
+}
+
+#board > div > div.absolute {
+    position:absolute;
+}
+
+#board > div > div.decrease {
+    width:0;
+    height:0;
+}
+
+
+#score-ai, #score-human {
+    text-align: center;
+}
+
+#score-ai > .score {
+    background-color: olive;
+    color:#fff;
+    padding:5px;
+    border-radius:20px;
+    min-width:20px;
+    height:20px;
+    text-align:center;
+}
+
+#score-human > .score {
+    background-color: #c60800;
+    color:#fff;
+    padding:5px;
+    border-radius:20px;
+    min-width:20px;
+    height:20px;
+    text-align:center;
+}
