@@ -16,3 +16,4 @@ On devra tenir compte :
 - du score (pas suffisant puisque la balance peut basculer d'un coup à l'autre / sauf si l'un ou l'autre joueur a gagné)
 - de l'effet d'horizon (déterminer le niveau de danger d'une feuille finale)
 - du nombre de coups possibles restants à chaque joueur (moins un joueur a de coups possibles, plus il est coincé)
+- des possibilités partagées / exclusives. S'il n'existe aucune possibilités partagées, alors les joueurs sont distinctement séparés et le gagnant sera celui qui aura le plus haut (score + possibilités).
