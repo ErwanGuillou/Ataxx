@@ -28,42 +28,42 @@ board.forEach(function(val,key) {
 
         // no
         if (board[key - 13] > -1) {
-            func += "if(board[" + (key - 13) + "] === 0){possibleMoves[i++] = ["+key+", "+(key - 13)+", 0];}";
+            func += "if(board[" + (key - 13) + "] === 0 && m_"+(key-13)+" === 0){possibleMoves[i++] = ["+key+", "+(key - 13)+", 0]; m_"+(key-13)+" = 1;}";
         }
 
         // n
         if (board[key - 12] > -1) {
-            func += "if(board[" + (key - 12) + "] === 0){possibleMoves[i++] = ["+key+", "+(key - 12)+", 0];}";
+            func += "if(board[" + (key - 12) + "] === 0 && m_"+(key-12)+" === 0){possibleMoves[i++] = ["+key+", "+(key - 12)+", 0]; m_"+(key-12)+" = 1;}";
         }
 
         // ne
         if (board[key - 11] > -1) {
-            func += "if(board[" + (key - 11) + "] === 0){possibleMoves[i++] = ["+key+", "+(key - 11)+", 0];}";
+            func += "if(board[" + (key - 11) + "] === 0 && m_"+(key-11)+" === 0){possibleMoves[i++] = ["+key+", "+(key - 11)+", 0]; m_"+(key-11)+" = 1;}";
         }
 
         // o
         if (board[key - 1] > -1) {
-            func += "if(board[" + (key - 1) + "] === 0){possibleMoves[i++] = ["+key+", "+(key - 1)+", 0];}";
+            func += "if(board[" + (key - 1) + "] === 0 && m_"+(key-1)+" === 0){possibleMoves[i++] = ["+key+", "+(key - 1)+", 0]; m_"+(key-1)+" = 1;}";
         }
 
         // e
         if (board[key + 1] > -1) {
-            func += "if(board[" + (key + 1) + "] === 0){possibleMoves[i++] = ["+key+", "+(key + 1)+", 0];}";
+            func += "if(board[" + (key + 1) + "] === 0 && m_"+(key+1)+" === 0){possibleMoves[i++] = ["+key+", "+(key + 1)+", 0]; m_"+(key+1)+" = 1;}";
         }
 
         // so
         if (board[key + 11] > -1) {
-            func += "if(board[" + (key + 11) + "] === 0){possibleMoves[i++] = ["+key+", "+(key + 11)+", 0];}";
+            func += "if(board[" + (key + 11) + "] === 0 && m_"+(key+11)+" === 0){possibleMoves[i++] = ["+key+", "+(key + 11)+", 0]; m_"+(key+11)+" = 1;}";
         }
 
         // s
         if (board[key + 12] > -1) {
-            func += "if(board[" + (key + 12) + "] === 0){possibleMoves[i++] = ["+key+", "+(key + 12)+", 0];}";
+            func += "if(board[" + (key + 12) + "] === 0 && m_"+(key+12)+" === 0){possibleMoves[i++] = ["+key+", "+(key + 12)+", 0]; m_"+(key+12)+" = 1;}";
         }
 
         // se
         if (board[key + 13] > -1) {
-            func += "if(board[" + (key + 13) + "] === 0){possibleMoves[i++] = ["+key+", "+(key + 13)+", 0];}";
+            func += "if(board[" + (key + 13) + "] === 0 && m_"+(key+13)+" === 0){possibleMoves[i++] = ["+key+", "+(key + 13)+", 0]; m_"+(key+13)+" = 1;}";
         }
 
         func += "}";
@@ -71,4 +71,4 @@ board.forEach(function(val,key) {
     }
 });
 
-    console.log(func);
+console.log(func);

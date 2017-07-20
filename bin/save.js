@@ -3412,6 +3412,8 @@ function play(player){
     // Au tour de l'IA
     if(player == Ai){
 
+        console.time('AI');
+
         let possibleMoves = getPossibleMoves(board, Ai);
         let i = possibleMoves.length;
         let bestMoves = [];
@@ -3420,6 +3422,7 @@ function play(player){
         let k = 0;
 
         while(i--){
+
 
             // Appliquer le mouvement sur une copie du plateau
             let move = possibleMoves[i];
@@ -3449,6 +3452,8 @@ function play(player){
         let bestMove = bestMoves[Math.floor(Math.random() * bestMoves.length)];
         let oldBoard = getCopyBoard(board);
         board = setMove(board, Ai, bestMove);
+
+        console.timeEnd('AI');
 
         // Visual feedback
         visualMove(bestMove[0], bestMove[1], bestMove[2], Ai, oldBoard);

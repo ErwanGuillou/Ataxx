@@ -52,16 +52,20 @@ body {
 }
 
 #board > div > div.pion.ai {
-    background-color: olive;
+    background-color: #c60800;
 }
 
 #board > div > div.pion.human {
-    background-color: #c60800;
+    background-color: olive;
     cursor: not-allowed;
 }
 
 #board > div > div.pion.human.clickable {
     cursor: pointer;
+}
+
+#board > div > div.pion.human.clicked {
+    background: #5A5A00;
 }
 
 #board > div > div.placeholder {
