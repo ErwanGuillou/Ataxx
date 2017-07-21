@@ -32,6 +32,8 @@ var Empty   =   0;
 var Hole    =   5;
 var Out     =   null;
 
+var firstToPlay = Ai;
+
 // Entities as Object
 var AiObj       =   $('<div class="pion ai"></div>').data({ Entity:Ai, Parent:null });
 var HumanObj    =   $('<div class="pion human"></div>').data({ Entity:Human, Parent:null });
@@ -45,6 +47,62 @@ var PlaceHolder         =   '<div class="placeholder"></div>';
 
 // Functions
 
+/**
+ * Diviser un array en [size] arrays
+ * @param input
+ * @param size
+ * @param preserveKeys
+ * @returns {*}
+ */
+function arrayChunk (input, size, preserveKeys) {
+    var x
+    var p = ''
+    var i = 0
+    var c = -1
+    var l = input.length || 0
+    var n = []
+    if (size < 1) {
+        return null
+    }
+    if (Object.prototype.toString.call(input) === '[object Array]') {
+        if (preserveKeys) {
+            while (i < l) {
+                (x = i % size)
+                    ? n[c][i] = input[i]
+                    : n[++c] = {}; n[c][i] = input[i]
+                i++
+            }
+        } else {
+            while (i < l) {
+                (x = i % size)
+                    ? n[c][x] = input[i]
+                    : n[++c] = [input[i]]
+                i++
+            }
+        }
+    } else {
+        if (preserveKeys) {
+            for (p in input) {
+                if (input.hasOwnProperty(p)) {
+                    (x = i % size)
+                        ? n[c][p] = input[p]
+                        : n[++c] = {}; n[c][p] = input[p]
+                    i++
+                }
+            }
+        } else {
+            for (p in input) {
+                if (input.hasOwnProperty(p)) {
+                    (x = i % size)
+                        ? n[c][x] = input[p]
+                        : n[++c] = [input[p]]
+                    i++
+                }
+            }
+        }
+    }
+    return n
+}
 
 /**
  * Récupérer tous les mouvements possibles, sans doublon.
@@ -2509,10 +2567,22 @@ function getPossibleMoves(board, player){
     return possibleMoves;
 }
 
+/**
+ * Créer une coopie distincte de board
+ * @param board
+ * @returns {[*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*]}
+ */
 function getCopyBoard(board){
     return [board[0], board[1], board[2], board[3], board[4], board[5], board[6], board[7], board[8], board[9], board[10], board[11], board[12], board[13], board[14], board[15], board[16], board[17], board[18], board[19], board[20], board[21], board[22], board[23], board[24], board[25], board[26], board[27], board[28], board[29], board[30], board[31], board[32], board[33], board[34], board[35], board[36], board[37], board[38], board[39], board[40], board[41], board[42], board[43], board[44], board[45], board[46], board[47], board[48], board[49], board[50], board[51], board[52], board[53], board[54], board[55], board[56], board[57], board[58], board[59], board[60], board[61], board[62], board[63], board[64], board[65], board[66], board[67], board[68], board[69], board[70], board[71], board[72], board[73], board[74], board[75], board[76], board[77], board[78], board[79], board[80], board[81], board[82], board[83], board[84], board[85], board[86], board[87], board[88], board[89], board[90], board[91], board[92], board[93], board[94], board[95], board[96], board[97], board[98], board[99], board[100], board[101], board[102], board[103], board[104], board[105], board[106], board[107], board[108], board[109], board[110], board[111], board[112], board[113], board[114], board[115], board[116], board[117], board[118], board[119], board[120], board[121], board[122], board[123], board[124], board[125], board[126], board[127], board[128], board[129], board[130], board[131], board[132], board[133], board[134], board[135]];
 }
 
+/**
+ * Appliquer un mouvement donné sur un plateau donné
+ * @param board
+ * @param player
+ * @param move
+ * @returns {*}
+ */
 function setMove(board, player, move){
 
     var from = move[0];
@@ -2541,6 +2611,10 @@ function setMove(board, player, move){
     return board;
 }
 
+/**
+ * Créer le plateau à partir de
+ * var global board
+ */
 function buildBoard(){
     var $board = $('#board');
     let locHole = 0;
@@ -2581,6 +2655,224 @@ function buildBoard(){
     nHoles = locHole++;;
 }
 
+/**
+ * Afficher les possibilités jouables
+ * par l'humain.
+ */
+function togglePossibleMoves(){
+
+    var $alpha = $(this);
+    var $alphaContainer = $alpha.data('Parent');
+    var alphaId = $alphaContainer.data('Id');
+
+    if(board[alphaId] === Human){
+
+        $alpha.toggleClass(function(e,classes,showMoves){
+
+            // Callback when clicking moving placeholder
+            // Elle doit rediriger vers une fonction commune aux deux joueurs.
+            // D'où la nécessite d'être transitoire.
+            var redirectToApplyMove = function(evt){
+                var container = $(this).parent('div');
+                var betaId = container.data('Id') || null;
+                var isJump = evt.data.jump;
+
+                if(betaId !== null){
+                    if(board[betaId] === Empty){
+                        // Lock board
+                        stop(Human);
+
+                        // Save move
+                        var oldBoard = getCopyBoard(board);
+                        board = setMove(board, Human, [alphaId, betaId, isJump]);
+
+                        // Get visual feedback
+                        visualMove(alphaId, betaId, isJump, Human, oldBoard);
+                    }
+                }
+            };
+
+            // Get possible clone & jump moves
+            var $clones = $('#board > div:data(Id)').filter(function(){
+
+                var thisId = $(this).data('Id');
+
+                return (
+                (thisId === (alphaId - 13) && board[alphaId - 13] === 0) ||
+                (thisId === (alphaId - 12) && board[alphaId - 12] === 0) ||
+                (thisId === (alphaId - 11) && board[alphaId - 11] === 0) ||
+                (thisId === (alphaId - 1) && board[alphaId - 1] === 0) ||
+                (thisId === (alphaId + 1) && board[alphaId + 1] === 0) ||
+                (thisId === (alphaId + 11) && board[alphaId + 11] === 0) ||
+                (thisId === (alphaId + 12) && board[alphaId + 12] === 0) ||
+                (thisId === (alphaId + 13) && board[alphaId + 13] === 0));
+
+            });
+            var $jumps = $('#board > div:data(Id)').filter(function(){
+
+                var thisId = $(this).data('Id');
+
+                return (
+                (thisId === (alphaId - 24) && board[alphaId - 24] === 0) ||
+                (thisId === (alphaId - 2) && board[alphaId - 2] === 0) ||
+                (thisId === (alphaId + 2) && board[alphaId + 2] === 0) ||
+                (thisId === (alphaId + 24) && board[alphaId + 24] === 0));
+
+            });
+
+            if(showMoves){
+
+                // First, hide visible placeholders
+                $('#board div.clicked').trigger('click');
+
+                // Then add eventlisteners
+                $clones.html(ClonePlaceholder);
+                $clones.find('> div.cplaceholder').one('click', {jump : 0}, redirectToApplyMove);
+                $jumps.html(JumpPlaceholder);
+                $jumps.find('> div.jplaceholder').one('click', {jump : 1}, redirectToApplyMove);
+            }
+            else {
+                $jumps.find('>div').off('click', redirectToApplyMove);
+                $jumps.empty();
+                $clones.find('>div').off('click', redirectToApplyMove);
+                $clones.empty();
+            }
+
+            return 'clicked';
+        }, !$alpha.hasClass("clicked"));
+
+    }
+}
+
+/**
+ * Animation de capture de pions adverses
+ * @param to
+ * @param player
+ * @param board
+ */
+function visualCatch(to, player, board){
+
+    var opponent = player * -1;
+
+    var toCatch = [];
+
+    if(board[to-13] === opponent) toCatch.push(to-13);
+    if(board[to-12] === opponent) toCatch.push(to-12);
+    if(board[to-11] === opponent) toCatch.push(to-11);
+    if(board[to-1] === opponent) toCatch.push(to-1);
+    if(board[to+1] === opponent) toCatch.push(to+1);
+    if(board[to+11] === opponent) toCatch.push(to+11);
+    if(board[to+12] === opponent) toCatch.push(to+12);
+    if(board[to+13] === opponent) toCatch.push(to+13);
+
+    // Effectuer la transition
+    // Si rien à capturer, continuer.
+    if(toCatch.length === 0){
+        next(opponent);
+    }
+
+    // Sinon, capturer puis changer de tour
+    else {
+
+        var completed = 0;
+        var $opponentPawnContainers = $('#board > div:data(Id)').filter(function(){
+            return toCatch.indexOf( $(this).data('Id') ) > -1;
+        });
+
+        // Callback
+        var increaseDecrease = function(){
+            $(this).removeClass( opponent == Human ? 'human' : 'ai' );
+            $(this).switchClass('decrease', (player == Ai ? 'ai' : 'human'), 200, 'swing', function(){
+                completed++;
+
+                if(completed === toCatch.length){
+                    // Next !
+                    next(opponent);
+                }
+            });
+        };
+
+        // Transition
+        $opponentPawnContainers.each(function(){
+            $(this).find('> div.pion').switchClass('', 'decrease', 200, 'swing', increaseDecrease);
+        });
+
+    }
+}
+
+/**
+ * Animation de déplacement
+ * @param from
+ * @param to
+ * @param isJump
+ * @param player
+ * @param board
+ */
+function visualMove(from, to, isJump, player, board){
+
+    // This is ONLY for visual feedback.
+    // Board is reloaded after calling this, through next()
+
+    // Récupérer Alpha et Beta
+    var $containerAlpha, $containerBeta, $alpha;
+    $('#board > div:data(Id)').each(function(){
+        if($(this).data('Id') === from) $containerAlpha = $(this);
+        if($(this).data('Id') === to) $containerBeta = $(this);
+    });
+
+    if($containerAlpha && $containerBeta){
+        if( ($containerAlpha.length + $containerBeta.length) === 2 ){
+
+            $alpha = $containerAlpha.find('div.pion');
+            $placeholder = $(PlaceHolder);
+            $containerBeta.html($placeholder);
+
+            // Sauter
+            if(isJump === 1){
+                $alpha.addClass('absolute');
+                $alpha.animate($placeholder.position(), 200, 'swing', function(){
+                    $placeholder.replaceWith($alpha).remove();
+                    $alpha.removeClass('absolute').removeAttr('style');
+                    visualCatch(to, player, board);
+                });
+            }
+
+            // Cloner
+            else {
+                var $cloneAlpha = $alpha.clone(true);
+                $cloneAlpha.addClass('absolute');
+                $alpha.after($cloneAlpha);
+                $cloneAlpha.animate($placeholder.position(), 200, 'swing', function(){
+                    $(this).removeClass('absolute').removeAttr('style');
+                    $placeholder.replaceWith($cloneAlpha).remove();
+                    visualCatch(to, player, board);
+                });
+            }
+
+
+        }
+    }
+}
+
+/**
+ * Afficher les scores
+ * Cette fonction n'est pas indispensable dans la mesure
+ * où buildBoard parcourt déjà le plateau pour le construire.
+ * Il suffirait d'incrémenter des variables.
+ */
+function setScores(){
+
+    var scores = getScores(board);
+
+    $('#score-ai > .score').text(scores[0]);
+    $('#score-human > .score').text(scores[1]);
+}
+
+/**
+ * Récupérer les scores sur board
+ * @param board
+ * @returns {[*,*,*]}
+ */
 function getScores(board){
     var nAi = nHuman = nHole = 0;
     if (board[22] === Ai) {
@@ -3163,195 +3455,12 @@ function getScores(board){
     return [nAi, nHuman, nHole];
 }
 
-function setScores(){
-
-    var scores = getScores(board);
-
-    $('#score-ai > .score').text(scores[0]);
-    $('#score-human > .score').text(scores[1]);
-}
-
-function togglePossibleMoves(){
-
-    var $alpha = $(this);
-    var $alphaContainer = $alpha.data('Parent');
-    var alphaId = $alphaContainer.data('Id');
-
-    if(board[alphaId] === Human){
-
-        $alpha.toggleClass(function(e,classes,showMoves){
-
-            // Callback when clicking moving placeholder
-            // Elle doit rediriger vers une fonction commune aux deux joueurs.
-            // D'où la nécessite d'être transitoire.
-            var redirectToApplyMove = function(evt){
-                var container = $(this).parent('div');
-                var betaId = container.data('Id') || null;
-                var isJump = evt.data.jump;
-
-                if(betaId !== null){
-                    if(board[betaId] === Empty){
-                        // Lock board
-                        stop(Human);
-
-                        // Save move
-                        var oldBoard = getCopyBoard(board);
-                        board = setMove(board, Human, [alphaId, betaId, isJump]);
-
-                        // Get visual feedback
-                        visualMove(alphaId, betaId, isJump, Human, oldBoard);
-                    }
-                }
-            };
-
-            // Get possible clone & jump moves
-            var $clones = $('#board > div:data(Id)').filter(function(){
-
-                var thisId = $(this).data('Id');
-
-                return (
-                (thisId === (alphaId - 13) && board[alphaId - 13] === 0) ||
-                (thisId === (alphaId - 12) && board[alphaId - 12] === 0) ||
-                (thisId === (alphaId - 11) && board[alphaId - 11] === 0) ||
-                (thisId === (alphaId - 1) && board[alphaId - 1] === 0) ||
-                (thisId === (alphaId + 1) && board[alphaId + 1] === 0) ||
-                (thisId === (alphaId + 11) && board[alphaId + 11] === 0) ||
-                (thisId === (alphaId + 12) && board[alphaId + 12] === 0) ||
-                (thisId === (alphaId + 13) && board[alphaId + 13] === 0));
-
-            });
-            var $jumps = $('#board > div:data(Id)').filter(function(){
-
-                var thisId = $(this).data('Id');
-
-                return (
-                (thisId === (alphaId - 24) && board[alphaId - 24] === 0) ||
-                (thisId === (alphaId - 2) && board[alphaId - 2] === 0) ||
-                (thisId === (alphaId + 2) && board[alphaId + 2] === 0) ||
-                (thisId === (alphaId + 24) && board[alphaId + 24] === 0));
-
-            });
-
-            if(showMoves){
-
-                // First, hide visible placeholders
-                $('#board div.clicked').trigger('click');
-
-                // Then add eventlisteners
-                $clones.html(ClonePlaceholder);
-                $clones.find('> div.cplaceholder').one('click', {jump : 0}, redirectToApplyMove);
-                $jumps.html(JumpPlaceholder);
-                $jumps.find('> div.jplaceholder').one('click', {jump : 1}, redirectToApplyMove);
-            }
-            else {
-                $jumps.find('>div').off('click', redirectToApplyMove);
-                $jumps.empty();
-                $clones.find('>div').off('click', redirectToApplyMove);
-                $clones.empty();
-            }
-
-            return 'clicked';
-        }, !$alpha.hasClass("clicked"));
-
-    }
-}
-
-function visualCatch(to, player, board){
-
-    var opponent = player * -1;
-
-    var toCatch = [];
-
-    if(board[to-13] === opponent) toCatch.push(to-13);
-    if(board[to-12] === opponent) toCatch.push(to-12);
-    if(board[to-11] === opponent) toCatch.push(to-11);
-    if(board[to-1] === opponent) toCatch.push(to-1);
-    if(board[to+1] === opponent) toCatch.push(to+1);
-    if(board[to+11] === opponent) toCatch.push(to+11);
-    if(board[to+12] === opponent) toCatch.push(to+12);
-    if(board[to+13] === opponent) toCatch.push(to+13);
-
-    // Effectuer la transition
-    // Si rien à capturer, continuer.
-    if(toCatch.length === 0){
-        next(opponent);
-    }
-
-    // Sinon, capturer puis changer de tour
-    else {
-
-        var completed = 0;
-        var $opponentPawnContainers = $('#board > div:data(Id)').filter(function(){
-            return toCatch.indexOf( $(this).data('Id') ) > -1;
-        });
-
-        // Callback
-        var increaseDecrease = function(){
-            $(this).removeClass( opponent == Human ? 'human' : 'ai' );
-            $(this).switchClass('decrease', (player == Ai ? 'ai' : 'human'), 250, 'swing', function(){
-                completed++;
-
-                if(completed === toCatch.length){
-                    // Next !
-                    next(opponent);
-                }
-            });
-        };
-
-        // Transition
-        $opponentPawnContainers.each(function(){
-            $(this).find('> div.pion').switchClass('', 'decrease', 250, 'swing', increaseDecrease);
-        });
-
-    }
-}
-
-function visualMove(from, to, isJump, player, board){
-
-    // This is ONLY for visual feedback.
-    // Board is reloaded after calling this, through next()
-
-    // Récupérer Alpha et Beta
-    var $containerAlpha, $containerBeta, $alpha;
-    $('#board > div:data(Id)').each(function(){
-        if($(this).data('Id') === from) $containerAlpha = $(this);
-        if($(this).data('Id') === to) $containerBeta = $(this);
-    });
-
-    if($containerAlpha && $containerBeta){
-        if( ($containerAlpha.length + $containerBeta.length) === 2 ){
-
-            $alpha = $containerAlpha.find('div.pion');
-            $placeholder = $(PlaceHolder);
-            $containerBeta.html($placeholder);
-
-            // Sauter
-            if(isJump === 1){
-                $alpha.addClass('absolute');
-                $alpha.animate($placeholder.position(), 1000, 'easeInOutElastic', function(){
-                    $placeholder.replaceWith($alpha).remove();
-                    $alpha.removeClass('absolute').removeAttr('style');
-                    visualCatch(to, player, board);
-                });
-            }
-
-            // Cloner
-            else {
-                var $cloneAlpha = $alpha.clone(true);
-                $cloneAlpha.addClass('absolute');
-                $alpha.after($cloneAlpha);
-                $cloneAlpha.animate($placeholder.position(), 250, 'swing', function(){
-                    $(this).removeClass('absolute').removeAttr('style');
-                    $placeholder.replaceWith($cloneAlpha).remove();
-                    visualCatch(to, player, board);
-                });
-            }
-
-
-        }
-    }
-}
-
+/**
+ * Fonction d'évaluation de négamax
+ * @param board
+ * @param player
+ * @returns {number}
+ */
 function bEval(board, player){
 
     let scores      =   getScores(board);
@@ -3373,10 +3482,19 @@ function bEval(board, player){
 
 }
 
+/**
+ * IA Négamax Alphabeta
+ * @param board
+ * @param depth
+ * @param player
+ * @param alpha
+ * @param beta
+ * @returns {*}
+ */
 function negaMax(board, depth, player, alpha, beta){
 
     let possibleMoves = getPossibleMoves(board, player);
-    if(depth > 3 || possibleMoves.length === 0){
+    if(depth === 2 || possibleMoves.length === 0){
         return bEval(board, player);
     }
 
@@ -3407,10 +3525,18 @@ function negaMax(board, depth, player, alpha, beta){
     return bestValue;
 }
 
+/**
+ * Faire jouer IA
+ * ou débloquer le plateau pour qu'humain joue.
+ * @param player
+ */
 function play(player){
 
     // Au tour de l'IA
     if(player == Ai){
+
+        // Start time
+        console.time('AI');
 
         let possibleMoves = getPossibleMoves(board, Ai);
         let i = possibleMoves.length;
@@ -3450,6 +3576,10 @@ function play(player){
         let oldBoard = getCopyBoard(board);
         board = setMove(board, Ai, bestMove);
 
+        // End time
+        console.timeEnd('AI');
+
+
         // Visual feedback
         visualMove(bestMove[0], bestMove[1], bestMove[2], Ai, oldBoard);
     }
@@ -3464,6 +3594,10 @@ function play(player){
 
 }
 
+/**
+ * Bloquer le plateau le temps des transitions
+ * @param player
+ */
 function stop(player){
 
     // Humain ne peut plus jouer
@@ -3479,6 +3613,10 @@ function stop(player){
 
 }
 
+/**
+ * Donner la main au joueur suivant
+ * @param player
+ */
 function next(player){
 
     // First, rebuild board
@@ -3487,23 +3625,28 @@ function next(player){
     setScores();
 
     // Then, the player must play !
-    // Petit timeout d'un 0,5 seconde pour éviter que l'IA ne soit trop rapide
+    // Petit timeout d'un 0,1 seconde pour éviter que l'IA ne soit trop rapide
     setTimeout(function(){
         play(player);
-    }, 500);
+    }, 100);
 }
 
+/**
+ * Démarrage du jeu / activation des Workers si nécessaire
+ * @param firstPlayer
+ */
 function start(firstPlayer){
-
     // First : building board
     buildBoard();
     setScores();
 
     // Let's move !
     play(firstPlayer);
-
 }
 
-// Start playing !
 
-start(Ai);
+// ------------   Start playing !
+start(firstToPlay);
+
+
+
