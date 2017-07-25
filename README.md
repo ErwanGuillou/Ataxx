@@ -21,3 +21,5 @@ On devra tenir compte :
 <!> Attention <!> Notes :
 Bien que l'IA puisse aisément prévoir 3/4 coups d'avance, on n'est pas à l'abri de l'effet d'horizon.
 Compte tenu de ce dernier, les valeurs minimax supérieures ne peuvent être délibérément strictement supérieures/inférieures aux valeurs Alphabeta.
+
+http://ataxx.erwanguillou.com/
