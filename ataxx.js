@@ -5,10 +5,10 @@
 
         null, null, null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null, null,
-        null, null, 5, 0, 0, 0, 0, 0, 0, 0, null, null,
+        null, null, 5, 1, 0, 0, 0, 0, 0, 0, null, null,
+        null, null, 1, 0, 0, 0, 0, 0, 0, 0, null, null,
         null, null, 0, 0, 0, 0, 0, 0, 0, 0, null, null,
-        null, null, 0, 0, 0, 0, 0, 0, 0, 0, null, null,
-        null, null, 0, 0, 0, 5, 5, 0, 1, 1, null, null,
+        null, null, 0, 0, 0, 5, 5, 0, 0, 0, null, null,
         null, null, 0, 0, 0, 5, 5, 0, 0, 0, null, null,
         null, null, 0, 0, 0, 0, 0, 0, 0, 0, null, null,
         null, null, 0, 0, 0, 0, 0, 0, 0, -1, null, null,
@@ -2918,7 +2918,9 @@
 
         // Au tour de l'IA
         if(player == Ai){
+            console.time('E');
             var aiMove = negaMax(board, 0, Ai, -150, 150);
+            console.timeEnd('E');
             if(typeof aiMove === 'object'){
 
                 // Save move
