@@ -2874,11 +2874,16 @@
 
             var scores = getScores(board);
             return player * (scores[0] - scores[1]);
+            
+            // Ajouter des éléments à mon évaluateur (voir readme)
 
         }
 
         // Sinon
         var max = -150;
+        
+        // Tenter de supprimer ce forEach pour des appels successifs.
+        // Je connais possibleMoves.length (je peux même le calculer dans getPossibleMoves)
         possibleMoves.forEach(function(move){
 
             var copiedBoard = getCopyBoard(board);
